@@ -8,7 +8,8 @@ from app.graph.prompts import (
     INTERVIEW_TOPICS_PROMPT,
     PROJECT_RECOMMENDER_PROMPT,
     RESUME_ALIGNMENT_PROMPT,
-    LEARNING_RESOURCES_PROMPT
+    LEARNING_RESOURCES_PROMPT,
+    TAVILY_SEARCH_PROMPT
 )
 
 
@@ -21,7 +22,8 @@ from app.schemas.outputs import (
     InterviewTopics,
     ProjectSuggestions,
     ResumeSuggestions,
-    LearningResources
+    LearningResources,
+    TavilyQuery
 )
 
 llm = get_llm()
@@ -44,4 +46,6 @@ project_recommender_chain = PROJECT_RECOMMENDER_PROMPT | llm.with_structured_out
 resume_alignment_chain = RESUME_ALIGNMENT_PROMPT | llm.with_structured_output(ResumeSuggestions)
 
 learning_resources_chain = LEARNING_RESOURCES_PROMPT | llm.with_structured_output(LearningResources)
+
+query_tavily_chain = TAVILY_SEARCH_PROMPT | llm.with_structured_output(TavilyQuery)
 

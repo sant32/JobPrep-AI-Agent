@@ -158,3 +158,34 @@ Plan Context:
 """)
 ])
 
+
+
+
+TAVILY_SEARCH_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", """
+You are an expert at generating highly effective web search queries for developers.
+
+Your goal:
+Generate a precise, high-quality search query to retrieve:
+- Real-world projects
+- GitHub repositories
+- Practical implementations
+
+Guidelines:
+- Include role and technical context
+- Include specific technologies (skills)
+- Prefer terms like: "real-world", "production", "backend", "project", "GitHub"
+- Avoid vague or generic queries
+- Keep it concise (max 15-20 words)
+- Focus on practical and implementable results
+"""),
+    ("human", """
+Plan Context:
+{plan_context}
+
+Generate a search query based on:
+- Target role
+- Missing skills (priority)
+- Existing skills (secondary)
+""")
+])

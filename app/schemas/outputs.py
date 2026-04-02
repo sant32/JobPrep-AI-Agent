@@ -85,3 +85,7 @@ class LearningResource(BaseModel):
 
 class LearningResources(BaseModel):
     resources: List[LearningResource]
+
+
+class TavilyQuery(BaseModel):
+    query: str

@@ -7,10 +7,11 @@ from app.graph.chains import (
     interview_topics_chain,
     project_recommender_chain,
     resume_alignment_chain,
-    learning_resources_chain
+    learning_resources_chain,
+    query_tavily_chain
 )
 
-
+from app.utils.tavily_search import tavily_search
 
 
 def input_parser(state):
@@ -103,11 +104,24 @@ def interview_topic_generator(state):
         "interview_topics": result.topics
     }
 
-
+# uvicorn app.main:app --reload
 
 def project_recommender(state):
+
+    plan_context = state["plan_context"]
+
+    query_obj = query_tavily_chain.invoke({
+        "plan_context": plan_context.model_dump_json(indent=2)
+    })
+
+    query = query_obj.query
+
+    search_results = tavily_search(query, max_results=5)
+    # print("Tavily Search Results:", search_results)
+
     result = project_recommender_chain.invoke({
-        "plan_context": state["plan_context"].model_dump_json(indent=2)
+        "plan_context": state["plan_context"].model_dump_json(indent=2),
+        "search_results": search_results
     })
      
     return {
