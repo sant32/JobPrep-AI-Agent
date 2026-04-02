@@ -1,32 +1,16 @@
-from app.llm.model import get_llm, get_google_llm
-from app.graph.prompts import (
-    JD_EXTRACTOR_PROMPT,
-    CANDIDATE_PROFILE_PROMPT,
-    SKILL_GAP_PROMPT,
-    PLANNER_PROMPT,
-    ROADMAP_PROMPT,
-    INTERVIEW_TOPICS_PROMPT,
-    PROJECT_RECOMMENDER_PROMPT,
-    RESUME_ALIGNMENT_PROMPT,
-    LEARNING_RESOURCES_PROMPT
+from app.graph.chains import (
+    planner_chain,
+    jd_extractor_chain,
+    candidate_profile_chain,
+    skill_gap_chain,
+    roadmap_chain,
+    interview_topics_chain,
+    project_recommender_chain,
+    resume_alignment_chain,
+    learning_resources_chain
 )
 
 
-
-from app.schemas.outputs import (
-    JDAnalysis,
-    CandidateProfile,
-    SkillGap,
-    PlanContext,
-    Roadmap,
-    InterviewTopics,
-    ProjectSuggestions,
-    ResumeSuggestions,
-    LearningResources
-)
-
-llm = get_llm()
-google_llm = get_google_llm()
 
 
 def input_parser(state):
@@ -38,110 +22,105 @@ def input_parser(state):
     }
 
 def JD_extractor(state):
-    structured_llm = llm.with_structured_output(JDAnalysis)
-
-    prompt = JD_EXTRACTOR_PROMPT.format(
-        job_description=state["job_description"]
-    )
-
-    result = structured_llm.invoke(prompt)
+    result = jd_extractor_chain.invoke(state["job_description"])
 
     return {
         "jd_analysis": result
     }
 
 
+
 def candidate_profile_extractor(state):
-    structured_llm = llm.with_structured_output(CandidateProfile)
-
-    prompt = CANDIDATE_PROFILE_PROMPT.format(
-        user_skills = ", ".join(state.get("user_skills", [])),
-        resume_text = state.get("resume_text", "")
-    )
-
-    result = structured_llm.invoke(prompt)
+    result = candidate_profile_chain.invoke({
+        "user_skills": ", ".join(state.get("user_skills", [])),
+        "resume_text": state.get("resume_text", "")
+    })
 
     return {
         "candidate_profile": result
     }
 
-def skill_gap_analyzer(state):
-    structured_llm = llm.with_structured_output(SkillGap)
 
-    prompt = SKILL_GAP_PROMPT.format(
-        jd_analysis=state["jd_analysis"].model_dump_json(indent=2),
-        candidate_profile=state["candidate_profile"].model_dump_json(indent=2)
+def calculate_readiness_score(matched, partial, missing):
+    total = len(matched) + len(partial) + len(missing)
+    if total == 0:
+        return 0
+
+    score = (len(matched) * 1.0 + len(partial) * 0.5) / total
+    return round(score * 100)
+
+
+
+
+
+def skill_gap_analyzer(state):
+    result = skill_gap_chain.invoke({
+        "jd_analysis": state["jd_analysis"].model_dump_json(indent=2),
+        "candidate_profile": state["candidate_profile"].model_dump_json(indent=2)
+    })
+
+    calculate_score = calculate_readiness_score(
+        matched=result.matched,
+        partial=result.partial,
+        missing=result.missing
     )
 
-    result = structured_llm.invoke(prompt)
+    result.readiness_score = calculate_score
+
     return {"skill_gap": result}
 
 
+
 def planner(state):
-    structured_llm = llm.with_structured_output(PlanContext)
+    result = planner_chain.invoke({
+        "skill_gap": state["skill_gap"].model_dump_json(indent=2),
+        "jd_analysis": state["jd_analysis"].model_dump_json(indent=2),
+        "prep_days": state["prep_days"]
+    })
+    return {"plan_context": result}
 
-    prompt = PLANNER_PROMPT.format(
-        skill_gap = state["skill_gap"].model_dump_json(indent=2),
-        jd_analysis = state["jd_analysis"].model_dump_json(indent=2),
-        prep_days = state["prep_days"]
-    )
 
-    result = structured_llm.invoke(prompt)
-
-    return {
-        "plan_context": result
-    }
 
 
 def roadmap_generator(state):
-    structured_llm = google_llm.with_structured_output(Roadmap)
-
-    prompt = ROADMAP_PROMPT.format(
-        plan_context = state["plan_context"].model_dump_json(indent=2)
-    )
-
-    result = structured_llm.invoke(prompt)
+    result = roadmap_chain.invoke({
+        "plan_context": state["plan_context"].model_dump_json(indent=2),
+        "prep_days": state["prep_days"]
+    })
 
     return {
         "roadmap": result
     }
 
 
+
 def interview_topic_generator(state):
-    structured_llm = llm.with_structured_output(InterviewTopics)
-
-    prompt = INTERVIEW_TOPICS_PROMPT.format(
-        plan_context = state["plan_context"].model_dump_json(indent=2)
-    )
-
-    result = structured_llm.invoke(prompt)
+    result = interview_topics_chain.invoke({
+        "plan_context": state["plan_context"].model_dump_json(indent=2)
+    })
 
     return {
         "interview_topics": result.topics
     }
 
 
+
 def project_recommender(state):
-    structured_llm = llm.with_structured_output(ProjectSuggestions)
-
-    prompt = PROJECT_RECOMMENDER_PROMPT.format(
-        plan_context = state["plan_context"].model_dump_json(indent=2)
-    )
-
-    result = structured_llm.invoke(prompt)
+    result = project_recommender_chain.invoke({
+        "plan_context": state["plan_context"].model_dump_json(indent=2)
+    })
+     
     return {
         "project_suggestions": result.projects
     }
 
 
+
 def resume_alignment_suggester(state):
-    structured_llm = llm.with_structured_output(ResumeSuggestions)
+    result = resume_alignment_chain.invoke({
+        "plan_context": state["plan_context"].model_dump_json(indent=2)
+    })
 
-    prompt = RESUME_ALIGNMENT_PROMPT.format(
-        plan_context = state["plan_context"].model_dump_json(indent=2)
-    )
-
-    result = structured_llm.invoke(prompt)
     return {
         "resume_suggestions": result.suggestions
     }
@@ -149,16 +128,17 @@ def resume_alignment_suggester(state):
 
 
 def learning_resource_suggester(state):
-    structured_llm = llm.with_structured_output(LearningResources)
+    result = learning_resources_chain.invoke({
+        "plan_context": state["plan_context"].model_dump_json(indent=2)
+    })
 
-    prompt = LEARNING_RESOURCES_PROMPT.format(
-        plan_context = state["plan_context"].model_dump_json(indent=2)
-    )
-
-    result = structured_llm.invoke(prompt)
     return {
         "learning_resources": result.resources
     }
+
+
+
+
 
 
 def merge_results(state):

@@ -53,7 +53,7 @@ class DailyPlanItem(BaseModel):
 
 class Roadmap(BaseModel):
     prep_days: int = Field(..., description="Total number of preparation days")
-    daily_plans: List[DailyPlanItem] = Field(
+    daily_plan: List[DailyPlanItem] = Field(
         ...,
         description="List of daily preparation plans, one item per day"
     )

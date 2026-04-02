@@ -1,95 +1,160 @@
-JD_EXTRACTOR_PROMPT = """
-You are an expert technical recruiter.
+from langchain_core.prompts import ChatPromptTemplate
 
-Analyze the following job description and extract only the requested structured information.
 
+JD_EXTRACTOR_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert technical recruiter."),
+    ("human", """Analyze the following job description and extract only the requested structured information.
 Job Description:
-{job_description}
-"""
+{job_description}""")
 
-CANDIDATE_PROFILE_PROMPT = """
-You are analyzing a candidate profile for a job preparation assistant.
+])
 
+CANDIDATE_PROFILE_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are analyzing a candidate profile for a job preparation assistant."),
+    ("human", """Extract only the requested structured profile information.
 User Skills:
 {user_skills}
-
+     
 Resume Text:
 {resume_text}
+""")
+])
 
-Extract only the requested structured profile information.
-"""
 
-SKILL_GAP_PROMPT = """
-Compare the job requirements and candidate profile.
 
+
+SKILL_GAP_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert career preparation planner."),
+    ("human", """Compare the job requirements and candidate profile.
+Rules:
+- Put clearly strong skills in matched.
+- Put partially demonstrated but not fully proven skills in partial.
+- Put genuinely absent or weakly demonstrated skills in missing.
+- priority_order must prioritize:
+  1. missing skills first
+  2. then partial skills
+  3. do NOT prioritize already strong matched skills unless they are core for interview depth   
+Return concise, practical output.
+     
 Job Analysis:
 {jd_analysis}
-
-Candidate Profile:
+     
+Candidate Profile:  
 {candidate_profile}
+""")
+])
 
-Return only the requested structured comparison.
-"""
 
-PLANNER_PROMPT = """
-You are building a preparation plan context for a job preparation assistant.
 
-Skill Gap:
+
+PLANNER_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert career preparation planner."),
+    ("human", """
+Skill gap:
 {skill_gap}
 
-JD Analysis:
+JD analysis:
 {jd_analysis}
 
-Prep Days:
+Prep days:
 {prep_days}
 
-Return only the requested structured plan context.
-"""
+Create a preparation plan context.
+""")
+])
 
-ROADMAP_PROMPT = """
-Create a personalized preparation roadmap.
 
+
+
+ROADMAP_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert career preparation planner."),
+    ("human", """Create a personalized preparation roadmap.
+Rules:
+- Focus mostly on missing and partial skills.
+- Do NOT waste days on skills the user already strongly knows.
+- Make the roadmap practical and interview-oriented.
+- Include implementation tasks, not just theory.
+- Tailor the plan to the target role.
+- Return exactly {prep_days} days.  
+     
 Plan Context:
 {plan_context}
+""")
+])
 
-Return a realistic roadmap for the candidate.
 
-IMPORTANT:
-- Include prep_days
-- Include daily_plans
-- Each daily plan must include:
-  - day
-  - title
-  - focus
-  - tasks
 
-Return only structured output.
-"""
-
-INTERVIEW_TOPICS_PROMPT = """
-Generate the most important interview preparation topics.
-
+INTERVIEW_TOPICS_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert career preparation planner."),
+    ("human", """Generate the most important interview preparation topics.
+Rules:
+- Return only 8 to 12 topics.
+- Focus on high-value technical interview areas.
+- Avoid generic items like "Introduction to AI" or "Mock Interview".
+- Prioritize missing skills, partial skills, and likely interview discussion areas.
+     
 Plan Context:
 {plan_context}
-"""
+""")
+])
 
-PROJECT_RECOMMENDER_PROMPT = """
-Suggest 3 portfolio projects aligned with the target role and skill gaps.
 
+
+PROJECT_RECOMMENDER_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert career preparation planner."),
+    ("human", """Suggest 3 portfolio projects aligned with the target role and skill gaps.
+     
 Plan Context:
 {plan_context}
-"""
+""")
+])
 
-RESUME_ALIGNMENT_PROMPT = """
-Suggest resume alignment improvements based on the role and missing skills.
 
+
+RESUME_ALIGNMENT_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert career preparation planner."),
+    ("human", """Suggest concise resume improvements based on the target role and missing skills.
+     
+Rules:
+- Return 5 to 8 suggestions only.
+- Each suggestion should be short, practical, and resume-actionable.
+- Avoid long explanations or essay-style output.
+     
 Plan Context:
 {plan_context}
-"""
+""")
+])
 
-LEARNING_RESOURCES_PROMPT = """
-Suggest learning resources and study topics.
 
+
+LEARNING_RESOURCES_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert career preparation planner."),
+    ("human", """Suggest learning resources and study topics.
+Rules:
+- Focus mainly on missing and partial skills.
+- Return 5 to 8 resources only.
+- Prefer practical implementation-oriented recommendations.
+- Avoid generic filler.
+     
 Plan Context:
 {plan_context}
-"""
+""")
+])
+
+
+
+
+LEARNING_RESOURCES_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert career preparation planner."),
+    ("human", """Suggest learning resources and study topics.
+Rules:
+- Focus mainly on missing and partial skills.
+- Return 5 to 8 resources only.
+- Prefer practical implementation-oriented recommendations.
+- Avoid generic filler.
+     
+Plan Context:
+{plan_context}
+""")
+])
+
