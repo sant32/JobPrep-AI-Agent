@@ -1,31 +1,41 @@
 # 🚀 JobPrep AI Agent
 
-An **Agentic AI-powered job preparation assistant** built using **LangGraph + FastAPI**, enhanced with **LangSmith tracing** for observability and debugging, and managed using **uv** for fast Python dependency management.
+An **Agentic AI-powered job preparation assistant** built using a **multi-agent DAG architecture with parallel fan-out/fan-in execution**, enabling scalable and modular LLM workflows.
+
+Built with **LangGraph + FastAPI**, enhanced with **LangSmith tracing** for observability and debugging, and managed using **uv** for ultra-fast Python dependency management.
 
 ---
 
 ## 📌 Features
 
 * 🔍 Job Description Parsing
-* 👤 Candidate Profile Extraction (from resume + skills)
+* 👤 Candidate Profile Extraction (resume + skills)
 * 📊 Skill Gap Analysis
-* 🧠 Intelligent Planning (Agentic decision-making)
-* ⚡ Parallel Execution using LangGraph:
+* 🧠 Planning Node (task decomposition for parallel execution)
 
-  * Roadmap Generator
-  * Interview Topic Generator
-  * Project Recommender
-  * Resume Alignment Suggestions
-  * Learning Resource Suggestions
+### ⚡ Parallel Multi-Agent Execution
+
+* Roadmap Generator
+
+* Interview Topic Generator
+
+* Project Recommender
+
+* Resume Alignment Suggestions
+
+* Learning Resource Suggestions
+
 * 🔗 Aggregation & Final Response Formatting
+
 * 🧪 LangSmith Tracing & Observability
+
 * ⚡ Ultra-fast dependency management with **uv**
 
 ---
 
 ## 🏗️ Architecture Overview
 
-```id="graph-flow"
+```
 START
   ↓
 input_parser
@@ -53,30 +63,56 @@ END
 
 ---
 
-## ⚙️ Tech Stack
+## 🤖 Why Multi-Agent Architecture?
 
-* **Backend:** FastAPI
-* **Agent Framework:** LangGraph
-* **Observability:** LangSmith
-* **Package Manager:** uv
-* **LLM Integrations:**
+Instead of relying on a single LLM call, this system decomposes the problem into **specialized agents**:
 
-  * Google GenAI
-  * Mistral
-* **Validation:** Pydantic
-* **Environment:** Python 3.11+
+* Improves accuracy through task isolation
+* Enables parallel execution for faster responses
+* Makes the system modular, scalable, and maintainable
+
+The system follows a **DAG-based orchestration pattern** using LangGraph.
 
 ---
 
 ## 🧠 How It Works
 
-1. Input Parsing → Normalize inputs
-2. JD Extraction → Extract requirements
-3. Candidate Profile → Structure resume
-4. Skill Gap Analysis → Identify missing skills
-5. Planner → Decide execution
-6. Parallel Agents → Generate outputs
-7. Merge + Format → Final response
+1. **Input Parsing** → Normalize user input
+2. **JD Extraction** → Extract structured job requirements
+3. **Candidate Profiling** → Structure resume into usable data
+4. **Skill Gap Analysis** → Identify missing skills
+5. **Planner** → Decompose tasks for execution
+6. **Parallel Agents** → Generate outputs concurrently
+7. **Merge + Format** → Final structured response
+
+---
+
+## ⚙️ Tech Stack
+
+* **Backend:** FastAPI
+* **Agent Framework:** LangGraph
+* **LLM Integrations:** Google GenAI, Mistral
+* **Prompt Engineering:** LangChain (ChatPromptTemplate)
+* **Validation:** Pydantic
+* **Observability:** LangSmith
+* **Package Manager:** uv
+* **Environment:** Python 3.11+
+
+---
+
+## 🧩 Prompt Engineering
+
+Each agent uses structured prompting via:
+
+* LangChain `ChatPromptTemplate`
+* Role-based prompts for task specialization
+* Structured output parsing (JSON)
+
+This ensures:
+
+* Consistent outputs
+* Reduced hallucination
+* Better control over LLM behavior
 
 ---
 
@@ -85,37 +121,15 @@ END
 This project integrates **LangSmith** for:
 
 * Tracing each LangGraph node execution
-* Debugging agent flows
-* Monitoring LLM performance
+* Debugging agent workflows
+* Monitoring LLM performance and latency
 
 ### 🔧 Setup
 
-```env id="langsmith-env"
+```
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_API_KEY=your_langsmith_api_key
 LANGCHAIN_PROJECT=jobprep-ai-agent
-```
-
----
-
-## 📁 Project Structure
-
-```id="project-structure"
-app/
-│
-├── graph/
-│   ├── builder.py
-│   ├── state.py
-│   └── nodes/
-│
-├── schemas/
-│   ├── request.py
-│   └── response.py
-│
-├── api/
-│   └── routes.py
-│
-└── main.py
 ```
 
 ---
@@ -124,13 +138,13 @@ app/
 
 ### Endpoint
 
-```id="endpoint"
+```
 POST /analyze-job
 ```
 
 ### Request Body
 
-```json id="request-body"
+```
 {
   "job_description": "string",
   "user_skills": ["Node.js", "React"],
@@ -141,15 +155,39 @@ POST /analyze-job
 
 ### Response
 
-```json id="response-body"
+```
 {
+  "match_score": 75,
+  "skill_gaps": ["Redis", "System Design"],
   "roadmap": "...",
-  "projects": "...",
-  "interview_topics": "...",
-  "resume_suggestions": "...",
-  "learning_resources": "..."
+  "recommended_projects": [...],
+  "interview_topics": [...],
+  "resume_suggestions": [...],
+  "learning_resources": [...]
 }
 ```
+
+---
+
+## 🐳 Docker Deployment
+
+### Build Image
+
+```
+docker build -t sant99/jobprep-ai-agent .
+```
+
+### Run Container
+
+```
+docker run --rm --env-file .env -p 8888:8000 sant99/jobprep-ai-agent        
+```
+
+### Notes
+
+* Uses Python 3.11 slim image
+* Dependencies installed via `uv`
+* Optimized for fast builds and smaller image size
 
 ---
 
@@ -157,50 +195,41 @@ POST /analyze-job
 
 ### 1. Install uv
 
-```bash id="install-uv"
+```
 curl -Ls https://astral.sh/uv/install.sh | sh
 ```
 
 or (Mac):
 
-```bash id="install-uv-brew"
+```
 brew install uv
 ```
 
----
-
 ### 2. Initialize Project (if needed)
 
-```bash id="init"
+```
 uv init
 ```
 
----
-
 ### 3. Add Dependencies
 
-```bash id="deps"
+```
 uv add fastapi langchain langchain-openai langchain-google-genai langchain-mistralai langgraph pydantic python-dotenv uvicorn
 ```
 
----
-
 ### 4. Create Virtual Environment & Sync
 
-```bash id="sync"
+```
 uv venv
 uv sync
 ```
 
----
-
 ### 5. Setup Environment Variables
 
-```env id="env"
+```
 GOOGLE_API_KEY=your_key
 MISTRAL_API_KEY=your_key
 
-# LangSmith
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_API_KEY=your_langsmith_api_key
 LANGCHAIN_PROJECT=jobprep-ai-agent
@@ -210,7 +239,7 @@ LANGCHAIN_PROJECT=jobprep-ai-agent
 
 ## ▶️ Run Server
 
-```bash id="run"
+```
 uv run uvicorn app.main:app --reload
 ```
 
@@ -223,7 +252,7 @@ uv run uvicorn app.main:app --reload
 
 * Open LangSmith dashboard
 * Select project: `jobprep-ai-agent`
-* View:
+* Inspect:
 
   * Node execution traces
   * LLM calls
@@ -231,34 +260,15 @@ uv run uvicorn app.main:app --reload
 
 ---
 
-## 🧩 Future Improvements
 
-* 🔄 PostgreSQL / Neon memory integration
-* 📁 Resume PDF upload
-* ⚡ Streaming responses
-* 🔐 Authentication
-* 📊 User progress tracking
+## 🏷️ Tags
 
----
-
-## 💡 Key Highlights
-
-* ⚡ Uses **uv** (10-100x faster than pip)
-* 🧠 Agentic workflow with LangGraph
-* 🔍 Full observability via LangSmith
-* 🧩 Modular and extensible architecture
-
----
-
-## 📜 License
-
-MIT License
-
----
-
-## 🤝 Contribution
-
-PRs are welcome. Open an issue for discussions.
+* Multi-Agent Systems
+* LangGraph
+* DAG Orchestration
+* LLM Applications
+* FastAPI
+* AI Backend Engineering
 
 ---
 
