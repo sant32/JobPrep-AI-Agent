@@ -11,4 +11,17 @@ def tavily_search(query: str, max_results: int = 5):
         max_results=max_results
     )
 
-    return response.get("results", [])
+    raw_results = response.get("results", [])
+    results = []
+
+    for item in raw_results:
+        title = item.get("title", "")
+        url = item.get("url", "")
+        content = item.get("content", "")
+
+        results.append({
+            "title": title,
+            "url": url,
+            "content": content
+        })
+    return results

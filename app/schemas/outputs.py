@@ -65,6 +65,7 @@ class InterviewTopics(BaseModel):
 class ProjectSuggestion(BaseModel):
     title: str
     level: str
+    url: Optional[str]
     why_it_matters: str
     stack: List[str]
 

@@ -104,7 +104,7 @@ def interview_topic_generator(state):
         "interview_topics": result.topics
     }
 
-# uvicorn app.main:app --reload
+
 
 def project_recommender(state):
 

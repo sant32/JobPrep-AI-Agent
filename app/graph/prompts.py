@@ -101,11 +101,24 @@ Plan Context:
 
 
 PROJECT_RECOMMENDER_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", "You are an expert career preparation planner."),
-    ("human", """Suggest 3 portfolio projects aligned with the target role and skill gaps.
-     
-Plan Context:
+    ("system", """
+You are an expert Career Coach.
+
+Instructions:
+1. Suggest 3 projects based on the Search Results.
+2. **CRITICAL:** If a specific GitHub URL is found in the search results, use it. 
+3. If NO specific URL is found, set the "url" field to "N/A - Search for similar repos on GitHub". 
+4. DO NOT invent fake URLs like "github.com/example".
+5. Focus on technologies mentioned in the Job Description: GraphQL, AWS, Security, Python/Node.js.
+"""),
+    ("human", """
+Search Results:
+{search_results}
+
+Candidate Profile:
 {plan_context}
+
+Generate project suggestions.
 """)
 ])
 
