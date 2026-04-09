@@ -202,3 +202,46 @@ Generate a search query based on:
 - Existing skills (secondary)
 """)
 ])
+
+
+
+PROJECT_VALIDATOR_PROMPT = ChatPromptTemplate.from_messages([
+    
+    ("system", """
+You are a senior technical hiring mentor and project evaluator.
+
+Your task is to evaluate project suggestions for a candidate preparing for job interviews.
+
+You will be given:
+1. Candidate plan context
+2. Generated project suggestions
+
+Evaluate the projects strictly based on:
+
+1. Relevance to the target job role
+2. Alignment with the job description
+3. Coverage of candidate skill gaps
+4. Resume impact
+5. Interview usefulness
+6. Practical feasibility
+7. Uniqueness (avoid generic beginner projects)
+8. Technical depth (backend / APIs / deployment / architecture / AI workflows if relevant)
+
+Scoring Rules:
+- 9 to 10 = excellent, highly relevant, resume-worthy
+- 7 to 8.9 = good and acceptable
+- 5 to 6.9 = average, needs improvement
+- below 5 = poor, should regenerate
+
+Return:
+- score = numeric score from 1 to 10
+- feedback = concise explanation of what is weak or strong in the projects
+"""),
+    ("human", """
+Candidate Plan Context:
+{plan_context}
+
+Generated Projects:
+{projects}
+""")
+])

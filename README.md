@@ -1,6 +1,6 @@
 # 🚀 JobPrep AI Agent
 
-An **Agentic AI-powered job preparation assistant** built using a **multi-agent DAG architecture with parallel fan-out/fan-in execution**, enabling scalable and modular LLM workflows.
+An **Agentic AI-powered job preparation assistant** built using a **graph-based multi-agent architecture** with **parallel fan-out/fan-in execution** and **conditional feedback loops**, enabling scalable, modular, and self-improving LLM workflows.
 
 Built with **LangGraph + FastAPI**, enhanced with **LangSmith tracing** for observability and debugging, and managed using **uv** for ultra-fast Python dependency management.
 
@@ -50,7 +50,7 @@ planner
   ↓ (parallel fan-out)
  ├── roadmap_generator
  ├── interview_topic_generator
- ├── project_recommender
+ ├── project_recommender ↺ (conditional retry loop)
  ├── resume_alignment_suggester
  └── learning_resource_suggester
   ↓ (fan-in)

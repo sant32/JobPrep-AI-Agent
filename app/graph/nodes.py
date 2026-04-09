@@ -8,7 +8,8 @@ from app.graph.chains import (
     project_recommender_chain,
     resume_alignment_chain,
     learning_resources_chain,
-    query_tavily_chain
+    query_tavily_chain,
+    project_validator_chain
 )
 
 from app.utils.tavily_search import tavily_search
@@ -107,30 +108,44 @@ def interview_topic_generator(state):
 
 
 def project_recommender(state):
-
     plan_context = state["plan_context"]
 
+    retry_count = state.get("project_retry_count", 0)
+    feedback = state.get("project_feedback", "")
+
+    # 1. Generate search query
     query_obj = query_tavily_chain.invoke({
         "plan_context": plan_context.model_dump_json(indent=2)
     })
 
     query = query_obj.query
-
     search_results = tavily_search(query, max_results=5)
-    # print("Tavily Search Results:", search_results)
 
+    # 2. Generate projects
     result = project_recommender_chain.invoke({
-        "plan_context": state["plan_context"].model_dump_json(indent=2),
-        "search_results": search_results
+        "plan_context": plan_context.model_dump_json(indent=2),
+        "search_results": search_results,
+        "feedback": feedback
     })
-     
+
+    # 3. Validate generated projects
+    validation = project_validator_chain.invoke({
+        "plan_context": plan_context.model_dump_json(indent=2),
+        "projects": result.projects
+    })
+
+    print("Project Validation Output:", validation.model_dump())
     return {
-        "project_suggestions": result.projects
+        "project_suggestions": result.projects,
+        "project_score": validation.score,
+        "project_feedback": validation.feedback,
+        "project_retry_count": retry_count + 1
     }
 
 
 
 def resume_alignment_suggester(state):
+    print("state", state)
     result = resume_alignment_chain.invoke({
         "plan_context": state["plan_context"].model_dump_json(indent=2)
     })

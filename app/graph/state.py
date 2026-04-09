@@ -26,6 +26,9 @@ class AgentState(TypedDict):
     roadmap: Roadmap
     interview_topics: List[str]
     project_suggestions: List[ProjectSuggestion]
+    project_feedback: Optional[str]
+    project_score: int
+    project_retry_count: int
     resume_suggestions: List[str]
     learning_resources: List[LearningResource]
 

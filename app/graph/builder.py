@@ -1,5 +1,7 @@
 from langgraph.graph import StateGraph, START, END
 from app.graph.state import AgentState
+from app.utils.routing import project_route
+
 from app.graph.nodes import (
     input_parser,
     JD_extractor,
@@ -16,6 +18,8 @@ from app.graph.nodes import (
 )
 
 
+
+
 def build_graph():
     graph = StateGraph(AgentState)
 
@@ -28,6 +32,16 @@ def build_graph():
     graph.add_node("roadmap_generator", roadmap_generator)
     graph.add_node("interview_topic_generator", interview_topic_generator)
     graph.add_node("project_recommender", project_recommender)
+
+    graph.add_conditional_edges(
+        "project_recommender",
+         project_route,
+        {
+            "project_recommender": "project_recommender",
+            "merge_results": "merge_results"
+        }
+    )
+    
     graph.add_node("resume_alignment_suggester", resume_alignment_suggester)
     graph.add_node("learning_resource_suggester", learning_resource_suggester)
 

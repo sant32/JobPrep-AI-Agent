@@ -90,3 +90,15 @@ class LearningResources(BaseModel):
 
 class TavilyQuery(BaseModel):
     query: str
+
+
+from pydantic import BaseModel, Field
+
+
+class ProjectValidationOutput(BaseModel):
+    score: float = Field(
+        description="Overall quality score from 1 to 10"
+    )
+    feedback: str = Field(
+        description="Short feedback explaining what is good or weak in the generated projects"
+    )
